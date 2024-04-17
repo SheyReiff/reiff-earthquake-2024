@@ -26,7 +26,6 @@ public class EarthquakeFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
-//check the following lines
 
         JRadioButton oneHourButton = new JRadioButton("One Hour");
         JRadioButton thirtyDaysButton = new JRadioButton("30 Days");
@@ -64,6 +63,7 @@ public class EarthquakeFrame extends JFrame {
             }
         });
     }
+
     private void subscribeToData(Single<FeatureCollection> dataStream) {
         Disposable disposable = dataStream
                 .subscribeOn(Schedulers.io())
