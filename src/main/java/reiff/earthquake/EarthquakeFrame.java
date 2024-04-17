@@ -18,6 +18,7 @@ import java.util.Arrays;
 public class EarthquakeFrame extends JFrame {
 
     private final JList<String> jlist = new JList<>();
+    private FeatureCollection response;
 
     public EarthquakeFrame() {
 
@@ -49,17 +50,27 @@ public class EarthquakeFrame extends JFrame {
         add(jlist, BorderLayout.CENTER);
         add(radioButtonPanel, BorderLayout.NORTH);
 
+
+
         EarthquakeService service = new EarthquakeServiceFactory().getService();
         // Subscribe to the selected radio button's data stream
         oneHourButton.addActionListener(e -> {
-            if (oneHourButton.isSelected()) {
                 subscribeToData(service.oneHour());
-            }
         });
 
         thirtyDaysButton.addActionListener(e -> {
-            if (thirtyDaysButton.isSelected()) {
                 subscribeToData(service.lastThirty());
+        });
+
+        jlist.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedIndex = jlist.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    Feature selectedFeature = response.features[selectedIndex];
+                    double latitude = selectedFeature.geometry.coordinates[1];
+                    double longitude = selectedFeature.geometry.coordinates[0];
+                    openGoogleMaps(latitude, longitude);
+                }
             }
         });
     }
@@ -74,22 +85,12 @@ public class EarthquakeFrame extends JFrame {
     }
 
     private void handleResponse(FeatureCollection response) {
+        this.response = response;
         String[] listData = Arrays.stream(response.features)
                 .map(feature -> feature.properties.mag + " " + feature.properties.place)
                 .toList()
                 .toArray(new String[0]);
         jlist.setListData(listData);
-        jlist.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) { // Ensure action only on final selection
-                int selectedIndex = jlist.getSelectedIndex();
-                if (selectedIndex != -1) {
-                    Feature selectedFeature = response.features[selectedIndex];
-                    double latitude = selectedFeature.geometry.coordinates[1];
-                    double longitude = selectedFeature.geometry.coordinates[0];
-                    openGoogleMaps(latitude, longitude);
-                }
-            }
-        });
     }
 
     private void openGoogleMaps(double latitude, double longitude) {
